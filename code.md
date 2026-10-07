@@ -1,8 +1,6 @@
 # Code Reference
 
-A file-by-file walkthrough of everything in `src/` and `supabase/`. For the product vision, see [README.md](README.md).
-
-**About the editor errors:** every file here will show red squiggles (`Cannot find module 'next'`, `Cannot find module 'react'`, `JSX element implicitly has type 'any'`, etc.) until you run `npm install` — there is no `node_modules` folder yet, so TypeScript has no type definitions to resolve against. That's the reason for *all* of them; none are actual logic bugs introduced by the code itself. Running `npm install` from the repo root fixes the overwhelming majority. If specific red squiggles remain after that, those are worth looking at individually.
+A beginner-friendly, file-by-file walkthrough of everything in `src/` and `supabase/`. For the product vision, see [README.md](README.md).
 
 ---
 
@@ -16,66 +14,71 @@ A file-by-file walkthrough of everything in `src/` and `supabase/`. For the prod
 7. [app/ — Pages and Routes](#app--pages-and-routes)
 8. [api/ — Route Handlers](#api--route-handlers)
 9. [supabase/schema.sql — Database](#supabaseschemasql--database)
+10. [Explaining This Project to a Developer](#explaining-this-project-to-a-developer)
+11. [Explaining This Project to a Non-Technical Person](#explaining-this-project-to-a-non-technical-person)
 
 ---
 
 ## Project Structure
 
-```
-TestRunCapstone/
-├── README.md                  product vision + current status
-├── code.md                    this file
-├── package.json                next/react/supabase/zod/tailwind
-├── tsconfig.json               "@/*" path alias → "./src/*"
-├── tailwind.config.ts          color tokens, fonts
-├── next.config.mjs             empty (default config)
-├── .env.example                the 3 env vars this app reads
-├── supabase/
-│   └── schema.sql              every table, RLS policy, and SQL function
-└── src/
-    ├── middleware.ts           runs on every request, refreshes auth session
-    ├── lib/
-    │   ├── types.ts            Post / Message / Kind TypeScript types
-    │   ├── format.ts           date/price/spots-text formatting helpers
-    │   ├── starters.ts         AI conversation-starter logic + fallback list
-    │   └── supabase/
-    │       ├── server.ts       Supabase client for Server Components/Actions
-    │       ├── client.ts       Supabase client for "use client" components
-    │       └── middleware.ts   session-refresh + protected-route logic
-    ├── components/
-    │   ├── Header.tsx          top nav bar (server component, reads auth state)
-    │   ├── TabBar.tsx           bottom mobile nav (client component)
-    │   ├── PostCard.tsx        the post preview tile used on feeds
-    │   ├── SpotsBar.tsx        the row of filled/empty capacity bars
-    │   ├── Logo.tsx            LogoMark (header icon) + Track (hero/decoration svg)
-    │   ├── NewPostForm.tsx     the 3-lane post-creation form (client component)
-    │   ├── JoinMessage.tsx     optional message + starter chips on the join page
-    │   ├── ChatThread.tsx      realtime chat UI (client component)
-    │   └── SubmitButton.tsx    submit button that shows pending state
-    └── app/
-        ├── layout.tsx          root layout: fonts, <Header/>, <TabBar/>
-        ├── globals.css         Tailwind layer + .btn/.card/.input/.chip classes
-        ├── page.tsx            Home ("/")
-        ├── browse/page.tsx     Browse ("/browse")
-        ├── new/page.tsx        New post ("/new")
-        ├── posts/[id]/
-        │   ├── page.tsx        Post detail
-        │   ├── join/page.tsx   Join flow (waiver + message)
-        │   ├── confirmed/page.tsx  "You're in" screen
-        │   └── live/page.tsx   "Your post is live" screen (shown after creating)
-        ├── messages/
-        │   ├── page.tsx        Chat list
-        │   └── [postId]/page.tsx  Single chat thread
-        ├── calendar/page.tsx   Upcoming/past events + .ics/rate links
-        ├── rate/[postId]/page.tsx  Post-meetup rating form
-        ├── profile/page.tsx    Own posts, joined posts, stats, reviews
-        ├── login/page.tsx      Log in
-        ├── signup/page.tsx     Sign up
-        ├── actions.ts          every Server Action (all writes go through here)
-        └── api/
-            ├── starters/route.ts        GET — AI conversation starters
-            └── ics/[postId]/route.ts    GET — downloads a .ics calendar file
-```
+Instead of a folder tree, here's each folder and the files inside it, with a plain-English description of what each one does.
+
+**Root folder**
+- `README.md` — explains what the app is and why it exists
+- `code.md` — this file
+- `package.json` — the list of packages the app depends on (Next.js, React, Supabase, Zod, Tailwind)
+- `tsconfig.json` — TypeScript settings; sets up the `@/` shortcut so code can write `@/lib/...` instead of a long relative path
+- `tailwind.config.ts` — defines the app's colors and fonts
+- `next.config.mjs` — Next.js's config file (empty right now, using all the defaults)
+- `.env.example` — a template listing the 3 secret/config values the app needs to run
+
+**supabase:**
+- `schema.sql` — one script that builds the entire database: every table, every security rule, every helper function
+
+**app:**
+- `layout.tsx` — the outer wrapper every page sits inside (loads fonts, shows the header and bottom tab bar on every page)
+- `globals.css` — site-wide styling, plus shortcut classes like `.btn` and `.card` used everywhere
+- `page.tsx` — the Home page (`/`)
+- `browse/page.tsx` — the Browse page (`/browse`)
+- `new/page.tsx` — the New Post page (`/new`)
+- `posts/[id]/page.tsx` — a single post's detail page
+- `posts/[id]/join/page.tsx` — the "join this post" page
+- `posts/[id]/confirmed/page.tsx` — the "you're in!" confirmation page
+- `posts/[id]/live/page.tsx` — shown right after you create a post, so you can see it live
+- `messages/page.tsx` — the list of all your chats
+- `messages/[postId]/page.tsx` — one specific chat conversation
+- `calendar/page.tsx` — your upcoming and past events
+- `rate/[postId]/page.tsx` — the page for rating people after a meetup
+- `profile/page.tsx` — your profile page
+- `login/page.tsx` — the log-in page
+- `signup/page.tsx` — the sign-up page
+- `actions.ts` — every "write" action in the app (sign in, create a post, join a post, etc.) lives here
+- `api/starters/route.ts` — a backend endpoint that returns AI-generated conversation starters
+- `api/ics/[postId]/route.ts` — a backend endpoint that generates a downloadable calendar invite file
+
+**components:**
+- `Header.tsx` — the top navigation bar
+- `TabBar.tsx` — the bottom navigation bar, shown on mobile
+- `PostCard.tsx` — the small preview box shown for each post on the feeds
+- `SpotsBar.tsx` — the little bar graphic showing how many spots in a post are filled
+- `Logo.tsx` — the app's logo icon plus a decorative "running track" image
+- `NewPostForm.tsx` — the form used to create a new post
+- `JoinMessage.tsx` — the message box + suggested conversation-starter buttons shown when joining a post
+- `ChatThread.tsx` — the live chat window
+- `SubmitButton.tsx` — a reusable "Submit" button that shows a loading state while a form is saving
+
+**lib:**
+- `types.ts` — describes the "shape" of the app's data (what a Post looks like, what a Message looks like, etc.)
+- `format.ts` — helper functions that turn raw data into readable text (like turning a timestamp into `"Sat, Oct 10, 2:30 PM"`)
+- `starters.ts` — generates AI-written conversation-starter questions, with a backup list in case the AI is unavailable
+
+**lib/supabase:**
+- `server.ts` — connects to the database from pages and server code
+- `client.ts` — connects to the database from the browser (used by client-side components)
+- `middleware.ts` — checks whether a visitor is logged in and sends them to the login page if they try to view something that requires it
+
+**src (top level):**
+- `middleware.ts` — a small file that runs before every page loads, to keep the visitor's login session fresh
 
 ---
 
@@ -83,139 +86,173 @@ TestRunCapstone/
 
 | File | What it does |
 |---|---|
-| `tsconfig.json` | Standard Next.js TS config. The one thing worth knowing: `"@/*": ["./src/*"]` — every `@/lib/...` or `@/components/...` import resolves relative to `src/`. |
-| `tailwind.config.ts` | Defines the color palette as named tokens (`teal`, `coral`, `navy`, `cream`, `beige`, `line`, `muted`) and two font variables (`--font-serif`, `--font-sans`) set up in `layout.tsx`. Every component references these tokens instead of raw hex values. |
-| `globals.css` | Imports Tailwind's three layers, then defines reusable classes in `@layer components`: `.btn`/`.btn-primary`/`.btn-navy`/`.btn-outline`, `.card`, `.label`, `.input`, `.chip`/`.chip-on`. These are what you'll see repeated across almost every page instead of long Tailwind utility strings. |
-| `.env.example` | The only 3 environment variables the app reads: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (required), `ANTHROPIC_API_KEY` (optional). |
-| `next.config.mjs` | Empty — no custom Next.js config. |
+| `tsconfig.json` | Standard Next.js TypeScript setup. The one thing worth knowing: `"@/*": ["./src/*"]` means any import written as `@/lib/...` or `@/components/...` points into the `src/` folder. |
+| `tailwind.config.ts` | Defines the color palette as named tokens (`teal`, `coral`, `navy`, `cream`, `beige`, `line`, `muted`) and two font variables (`--font-serif`, `--font-sans`) that get set up in `layout.tsx`. Components use these names instead of raw color codes. |
+| `globals.css` | Pulls in Tailwind, then defines reusable style classes like `.btn`, `.card`, `.label`, `.input`, and `.chip`. These show up repeatedly across the app instead of long strings of utility classes. |
+| `.env.example` | The only 3 settings the app reads: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (both required to connect to the database), and `ANTHROPIC_API_KEY` (optional — only needed for the AI conversation starters). |
+| `next.config.mjs` | Empty — the app just uses Next.js's defaults. |
 
 ---
 
 ## lib/ — Shared Code
 
 ### `lib/types.ts`
-Plain TypeScript types, no runtime code:
-- `Kind = "skill" | "activity" | "request"` — the three post categories.
-- `Post` — mirrors the `posts` table plus the two things that get joined in via Supabase's `select()` syntax: `host` (from `profiles`) and `post_times` (array).
-- `PostTime`, `Message` — mirror their tables directly.
-- `KIND_LABEL` — maps each `Kind` to its display label ("Skill practice", "Activity", "Service request"), used by `PostCard` and the post detail page.
+Just type definitions — no actual logic, just descriptions of what each piece of data looks like:
+- `Kind = "skill" | "activity" | "request"` — the three categories a post can be.
+- `Post` — what a post looks like, including the host's info and its scheduled times.
+- `PostTime`, `Message` — describe those two tables directly.
+- `KIND_LABEL` — turns each `Kind` into a friendly label ("Skill practice", "Activity", "Service request") shown on post cards and detail pages.
 
 ### `lib/format.ts`
-Pure formatting functions, all timezone-pinned to `"America/New_York"`:
+Small functions that take raw dates/numbers and turn them into readable text (always shown in the `"America/New_York"` timezone):
 - `fmtDateTime(iso)` → `"Sat, Oct 10, 2:30 PM"`
 - `fmtDay(iso)` → `"Saturday, October 10"`
 - `fmtTime(iso)` → `"2:30 PM"`
-- `dayParts(iso)` → `{ dow: "SAT", day: "10" }`, used by the little date-chip UI on Home/Calendar
-- `priceText(post)` → `"$15"` or `"Free"` (converts `price_cents` → dollars)
+- `dayParts(iso)` → `{ dow: "SAT", day: "10" }`, used for the little date-chip shown on Home/Calendar
+- `priceText(post)` → `"$15"` or `"Free"`
 - `spotsText(post)` → `"3 spots open"` or `"2 of 4 spots filled"`
 
 ### `lib/starters.ts`
-AI conversation starters, with a graceful fallback:
-- `fallbackStarters(kind)` — a static, hardcoded array of 3 questions per `Kind`. Always available, no network call.
-- `getStarters({ title, category, kind })` — if `ANTHROPIC_API_KEY` is unset, returns `fallbackStarters()` immediately. Otherwise calls the Anthropic Messages API directly via `fetch` (model `claude-haiku-4-5`), asking for 3 short starters as a JSON array in the response text, parses that array out, and falls back to the static list on any error (bad response, JSON parse failure, network error). This function is never allowed to throw — every path returns a string array.
+Generates AI conversation-starter suggestions, but never leaves a user without any:
+- `fallbackStarters(kind)` — a fixed list of 3 questions per `Kind`. Always works, no internet call needed.
+- `getStarters({ title, category, kind })` — if there's no `ANTHROPIC_API_KEY` set up, it just returns the fallback list right away. Otherwise it asks Claude (Anthropic's AI) for 3 short starter questions and returns those. If anything goes wrong (bad response, network issue, etc.) it quietly falls back to the static list instead of showing an error.
 
 ### `lib/supabase/server.ts`
-`createClient()` — builds a Supabase client for use in Server Components and Server Actions, wired to read/write the Next.js cookie store (`next/headers`). The `setAll` cookie write is wrapped in a `try/catch` because Server *Components* (not Actions) aren't allowed to set cookies — the middleware handles refreshing the session in that case instead.
+Sets up a connection to the Supabase database for use on pages and in server actions — the kind of code that runs on the server, not in the user's browser.
 
 ### `lib/supabase/client.ts`
-`createClient()` — builds a Supabase client for `"use client"` components (currently only `ChatThread.tsx`), using `createBrowserClient` instead of the server/cookie-based one.
+Sets up a connection to Supabase for use in the browser (currently only `ChatThread.tsx` needs this, since it has to listen for new chat messages live).
 
 ### `lib/supabase/middleware.ts`
-`updateSession(request)` — called from the root `middleware.ts` on every request:
-1. Builds a Supabase client bound to the request/response cookies.
-2. Calls `supabase.auth.getUser()`, which also refreshes the session cookie if the access token is close to expiring.
-3. Checks the request path against a `PROTECTED` list (`/new`, `/messages`, `/calendar`, `/profile`, `/rate`) plus a regex for `/posts/[id]/join|confirmed|live`.
-4. If the path needs auth and there's no user, redirects to `/login?next=<original path>` so the login action can send them back afterward.
+`updateSession(request)` — runs on every page request, called from the root `middleware.ts`:
+1. Connects to Supabase.
+2. Checks who the current visitor is, refreshing their login session if it's about to expire.
+3. Checks whether the page they're visiting requires being logged in (pages like `/new`, `/messages`, `/calendar`, `/profile`, `/rate`, and the post join/confirm/live pages).
+4. If login is required and no one's logged in, redirects to `/login`, remembering where they were headed so they land back there after logging in.
 
 ---
 
 ## middleware.ts — Session Refresh
 
-Ten lines at the project root: delegates straight to `updateSession()` above. The `config.matcher` excludes `_next/static`, `_next/image`, `favicon.ico`, and image file extensions, so the middleware only runs on actual page/data requests.
+A tiny file at the project root — about ten lines. It just hands off to `updateSession()` above on every page load. It skips static files like images and fonts, so it only runs for actual pages.
 
 ---
 
 ## actions.ts — Server Actions
 
-Every write in the app goes through one of these functions (`src/app/actions.ts`), called directly as a form's `action` prop — no separate API layer for mutations.
+Every single "write" in the app (saving something to the database) goes through one of these functions in `src/app/actions.ts`. Forms call them directly — there's no separate backend API for these.
 
 | Function | What it does |
 |---|---|
-| `signIn(formData)` | Calls `supabase.auth.signInWithPassword`. On error, redirects back to `/login` with the error message in the query string. On success, redirects to the `next` param (defaults to `/`). |
-| `signUp(formData)` | Calls `supabase.auth.signUp` with `full_name` in the user metadata (the `handle_new_user` DB trigger reads this to create the `profiles` row). If email confirmation is required, there's no session yet, so it redirects to `/login` with a "check your email" message instead of `/`. |
-| `signOut()` | `supabase.auth.signOut()`, redirect to `/`. |
-| `createPost(formData)` | Validates the form with a Zod schema (`kind`, `title` 3–120 chars, `category`, `description`, `location`, `price` 0–1000, `capacity` 1–50, `duration_min` 15–480). Parses up to 3 `times` values into `Date`s. Inserts the `posts` row, then inserts the `post_times` rows. Revalidates `/` and `/browse`, redirects to `/posts/[id]/live`. |
-| `joinPost(formData)` | Calls the `join_post()` Postgres function via `supabase.rpc()` — all the capacity/waiver/duplicate-join validation happens in SQL (see schema below), not here. On error, redirects back to the join page with the message. On success, redirects to `/posts/[id]/confirmed`. |
-| `leavePost(formData)` | Calls `leave_post()` via RPC, redirects back to the post. |
-| `askQuestion(formData)` | Requires a signed-in user (redirects to login with a `next` param otherwise); inserts into `questions`. |
-| `answerQuestion(formData)` | Updates a `questions` row's `answer` column. (Relies on the RLS policy to actually enforce that only the host can do this — there's no explicit host check in this function itself.) |
-| `submitRating(formData)` | Inserts into `ratings` (`stars`, `showed_up`, `tags` array, `comment`). Ignores "duplicate" constraint errors silently (so re-submitting the same rating form twice doesn't show a scary error) but surfaces any other error. |
-| `reportPost(formData)` | Requires sign-in, inserts into `reports`, redirects back to the post with `?reported=1`. |
+| `signIn(formData)` | Logs the user in. If it fails, sends them back to `/login` with an error message. If it works, sends them wherever they were trying to go. |
+| `signUp(formData)` | Creates a new account. A database trigger automatically creates a matching profile using the name provided at signup. If the user needs to confirm their email first, they're sent to `/login` with a "check your email" message instead of straight into the app. |
+| `signOut()` | Logs the user out and sends them home. |
+| `createPost(formData)` | Checks that the form data is valid (title length, price range, capacity, etc.), then saves the new post and its scheduled times to the database, then takes the user to the "your post is live" page. |
+| `joinPost(formData)` | Lets a user join a post. All the actual rule-checking (is there room? did they agree to the waiver? etc.) happens inside the database itself, not in this function — see the schema section below. If something's wrong, it sends them back with an error message; otherwise, to the "you're confirmed" page. |
+| `leavePost(formData)` | Removes the user from a post they'd joined. |
+| `askQuestion(formData)` | Saves a question to a post (requires being logged in). |
+| `answerQuestion(formData)` | Saves a host's answer to a question. |
+| `submitRating(formData)` | Saves a rating (stars, tags, comment) after a meetup. If someone accidentally submits the same rating twice, it's silently ignored instead of showing an error. |
+| `reportPost(formData)` | Saves a report about a post (requires being logged in). |
 
-Two small helpers at the top of the file: `str(formData, key)` (safe string extraction + trim) and `safeNext(next)` (only allows redirect targets starting with `/` and not `//`, to avoid open-redirect issues with the `next` query param).
+There are also two small helper functions at the top of the file: one safely pulls a trimmed string out of form data, and the other makes sure redirect links always stay inside the app (so a sneaky "next page" link can't send someone off-site).
 
 ---
 
 ## components/
 
-| Component | Client/Server | Purpose |
+| Component | Runs on | Purpose |
 |---|---|---|
-| `Header.tsx` | Server | Logo, nav links (Home/Browse/Messages/Calendar, desktop-only), search bar (desktop-only), and either Log in/Sign up or New post/Avatar depending on `supabase.auth.getUser()`. |
-| `TabBar.tsx` | Client (`usePathname`) | Mobile-only bottom nav: Home, Browse, a raised "+" post button, Chats, You. Highlights the active tab based on the current route. |
-| `PostCard.tsx` | Server | The tile used on Home/Browse/Profile feeds — kind tag, price, title, location/time line, `SpotsBar`, and spots-left text. Switches to a solid navy "Booked" style once `status === "booked"`. |
-| `SpotsBar.tsx` | Server | Renders up to 12 small bar segments, filling `filled` of them in teal (or coral if booked). |
-| `Logo.tsx` | Server | `LogoMark` (the small rounded-badge icon in the header) and `Track` (the decorative running-track SVG used on Home/Login/Signup/Confirmed/Live pages). |
-| `NewPostForm.tsx` | Client | The `/new` form. Local state for the 3 lane buttons (skill/activity/request), up to 3 datetime inputs, a capacity stepper, price, and a live preview card. Submits via the `action` prop passed in from the page (`createPost`). |
-| `JoinMessage.tsx` | Client | A textarea plus clickable "starter" chips (from `fallbackStarters`) that append themselves into the textarea — used on the join page, separate from the AI-backed starters in `ChatThread`. |
-| `ChatThread.tsx` | Client | Subscribes to a Supabase realtime channel (`postgres_changes` on `messages`, filtered to the current `post_id`) so new messages appear without a refresh. Also fetches `/api/starters` on mount for the AI-generated chips. Sends messages by inserting directly into `messages` from the browser client (RLS enforces who's allowed to). |
-| `SubmitButton.tsx` | Client (`useFormStatus`) | A generic submit button that disables itself and swaps its label while its parent `<form>` is pending — reused by nearly every form in the app instead of each page managing its own pending state. |
+| `Header.tsx` | Server | The top nav bar: logo, nav links, search bar, and either "Log in / Sign up" or "New post / Avatar" depending on whether someone's logged in. |
+| `TabBar.tsx` | Browser | The bottom nav bar shown on mobile: Home, Browse, a "+" button to make a post, Chats, and You. Highlights whichever tab matches the current page. |
+| `PostCard.tsx` | Server | The preview tile shown on the Home/Browse/Profile feeds — shows the category, price, title, location/time, the spots bar, and how many spots are left. Turns navy and says "Booked" once it's full. |
+| `SpotsBar.tsx` | Server | Draws up to 12 little bar segments, filling in however many spots are taken. |
+| `Logo.tsx` | Server | The small icon shown in the header, plus a bigger decorative "running track" graphic used on a few pages. |
+| `NewPostForm.tsx` | Browser | The form on `/new`: pick a category, add up to 3 time options, set capacity/price, and see a live preview as you type. |
+| `JoinMessage.tsx` | Browser | A text box plus clickable suggested questions that get added into the message when clicked — used on the join page. |
+| `ChatThread.tsx` | Browser | The live chat window. Listens for new messages in real time so they show up without refreshing the page, and also loads AI-suggested conversation starters. |
+| `SubmitButton.tsx` | Browser | A "Submit" button that automatically disables itself and shows a loading label while its form is saving — reused across nearly every form in the app. |
 
 ---
 
 ## app/ — Pages and Routes
 
-All pages are Server Components (`async function ...`) unless noted, and most set `export const dynamic = "force-dynamic"` so Supabase data is always read fresh rather than cached at build time.
+Every page here loads fresh data from the database each time it's visited, rather than using a cached version.
 
-- **`layout.tsx`** — root layout. Loads the two Google fonts via `next/font/google`, wraps every page in `<Header/>` … `<TabBar/>`, sets the page `<title>`/`<meta>`.
-- **`page.tsx` (`/`)** — hero (different copy signed-in vs. signed-out), the 3 colored "lane" cards linking to `/new?kind=...`, an 8-post "Open this week" feed, an "upcoming" sidebar (signed-in users see their next 3 joined events, pulled from `participants`), a safety-tip box, and the 4-step "how it works" strip.
-- **`browse/page.tsx` (`/browse`)** — builds a Supabase query from `searchParams` (`q` text search across title/category/description/location, `type`, `open=1`, `free=1`), renders results as `PostCard`s, and renders the active filters as chip links (`href()` helper merges the new filter into the existing query string).
-- **`new/page.tsx` (`/new`)** — thin wrapper: reads `?kind=` from the URL to pre-select a lane, renders `<NewPostForm action={createPost} .../>`.
-- **`posts/[id]/page.tsx`** — the big one. Loads the post, its `post_times`, questions (with asker names), and host ratings in parallel; computes `avg` rating, `isHost`, `joined`, `booked`. Renders differently depending on viewer role: host sees "Open chat"/"Rate participants"; a joined user sees "See your plan"/"Leave this post"; everyone else sees a time-picker + "Join this test run" form (a plain `<form method="get">` to `/posts/[id]/join`, not a Server Action, since it's just navigating with the chosen time in the query string).
-- **`posts/[id]/join/page.tsx`** — shows the chosen time, a waiver checkbox (only if `requires_waiver`), and the `JoinMessage` starter-chip textarea. Submits to the `joinPost` Server Action.
-- **`posts/[id]/confirmed/page.tsx`** — "You're in" screen: add-to-calendar (`.ics`) and Google Maps directions links, a "what happens next" list, and a card linking into the chat.
-- **`posts/[id]/live/page.tsx`** — shown right after `createPost` redirects here. Re-renders the new post as a `PostCard` so the host can see exactly what others will see.
-- **`messages/page.tsx` (`/messages`)** — lists every post the user hosts or has joined as a chat-list entry (no last-message preview, just the post title + "Group"/"1:1 chat" label).
-- **`messages/[postId]/page.tsx`** — verifies the signed-in user is actually a member (host or participant) via a `memberIds` check, loads the last 200 messages and the names of everyone in the thread, then renders `<ChatThread/>`.
-- **`calendar/page.tsx` (`/calendar`)** — two parallel queries (events you joined, events you host), merged and sorted by `starts_at`, split into "upcoming" (now − 1hr onward) and "past". Upcoming rows link to chat + `.ics`; past rows link to `/rate/[postId]`.
-- **`rate/[postId]/page.tsx`** — figures out who you're allowed to rate (the host rates every participant; a participant rates only the host), skips anyone you've already rated, and renders one rating form per remaining person (showed-up radio, 1–5 stars, tag checkboxes styled as pills, optional comment).
-- **`profile/page.tsx` (`/profile`)** — your info + sign-out button, a 3-stat row (test runs / average rating / no-shows), your own posts, posts you've joined, and reviews received.
-- **`login/page.tsx`, `signup/page.tsx`** — split-screen layout (teal promo panel + form), submit to the `signIn`/`signUp` Server Actions.
+- **`layout.tsx`** — the wrapper every page sits inside: loads the fonts, shows the header and tab bar, sets the page title.
+- **`page.tsx` (`/`)** — the homepage: a hero banner, the 3 colored category cards, a feed of open posts, an "upcoming" list for logged-in users, a safety tip, and a "how it works" section.
+- **`browse/page.tsx` (`/browse`)** — search and filter posts (by keyword, type, "has open spots," "free only"), shown as a feed of `PostCard`s with clickable filter chips.
+- **`new/page.tsx` (`/new`)** — the "create a post" page. Pre-selects a category if one was passed in the URL, then shows the `NewPostForm`.
+- **`posts/[id]/page.tsx`** — the main post detail page. Shows different things depending on who's looking: the host sees "Open chat" and "Rate participants," someone who already joined sees "See your plan" and "Leave," and everyone else sees a form to pick a time and join.
+- **`posts/[id]/join/page.tsx`** — confirms the chosen time, shows the waiver checkbox if needed, and includes the conversation-starter message box.
+- **`posts/[id]/confirmed/page.tsx`** — the "you're in!" page: add-to-calendar and directions links, a "what happens next" checklist, and a link into the chat.
+- **`posts/[id]/live/page.tsx`** — shown right after creating a post, showing exactly how it now appears to others.
+- **`messages/page.tsx` (`/messages`)** — a list of every chat you're part of, as host or participant.
+- **`messages/[postId]/page.tsx`** — one specific chat thread. Checks that you're actually allowed to be in it before showing the messages.
+- **`calendar/page.tsx` (`/calendar`)** — your events split into "upcoming" and "past," pulling together both posts you host and posts you've joined.
+- **`rate/[postId]/page.tsx`** — after a meetup, shows a rating form for each person you're allowed to rate (and skips anyone you've already rated).
+- **`profile/page.tsx` (`/profile`)** — your info, a sign-out button, your stats, your posts, posts you've joined, and reviews you've received.
+- **`login/page.tsx`, `signup/page.tsx`** — the log-in and sign-up forms.
 
 ---
 
 ## api/ — Route Handlers
 
 ### `api/starters/route.ts`
-`GET` — reads `kind`/`title`/`category` from the query string (defaults `kind` to `"activity"` if it's not one of the three valid values), calls `getStarters()`, returns `{ starters: string[] }` as JSON. Used by `ChatThread.tsx`'s `fetch`.
+A small backend endpoint: given a post's title/category/type, it returns 3 AI-suggested conversation starters as JSON. Used by `ChatThread.tsx`.
 
 ### `api/ics/[postId]/route.ts`
-`GET` — requires a signed-in user who is either the host or a participant of the post (otherwise 401/404). Finds the relevant start time (the participant's chosen time, or the earliest `post_times` entry if they're the host), computes an end time from `duration_min`, and hand-builds an RFC 5545 `VCALENDAR`/`VEVENT` text block (escaping `;`, `,`, backslashes, and newlines per the spec) — no calendar library involved. Returns it with `Content-Type: text/calendar` and a `Content-Disposition` that names the download `test-run-<first 8 chars of post id>.ics`.
+A small backend endpoint that builds a downloadable calendar invite file (`.ics`) for a post, so people can add it to their own calendar app. Only works for people who are actually the host or a participant of that post.
 
 ---
 
 ## supabase/schema.sql — Database
 
-Run once in the Supabase SQL editor; creates everything below in one pass.
+One script you run once in the Supabase SQL editor to set up the whole database.
 
-**Tables:** `profiles`, `posts`, `post_times`, `participants`, `messages`, `questions`, `ratings`, `reports` — see the [Data Model table in README.md](README.md#data-model) for columns.
+**Tables:** `profiles`, `posts`, `post_times`, `participants`, `messages`, `questions`, `ratings`, `reports` — see the [Data Model table in README.md](README.md#data-model) for what columns each one has.
 
-**Trigger:** `handle_new_user()` fires `after insert on auth.users` and creates the matching `profiles` row, reading `full_name` out of the signup's user metadata.
+**Automatic trigger:** whenever someone signs up, a matching `profiles` row is created automatically, using the name they typed in at signup.
 
-**Functions (both `security definer`, meaning they run with the privileges of the function owner, not the calling user — necessary because they need to bypass RLS to do their job safely):**
-- `is_post_member(p_post)` — returns `true` if the current user hosts or has joined the given post. Written as a function specifically so the `messages` RLS policy can call it without triggering a recursive RLS check on `participants`.
-- `join_post(p_post, p_time, p_message, p_waiver)` — the atomic join: locks the post row (`for update`), then checks in order — signed in, not your own post, not already joined, capacity not full, waiver acknowledged if required, chosen time actually belongs to this post — raising a SQL exception (which `actions.ts` surfaces as the redirect error message) on the first failure. If everything passes, inserts the `participants` row and increments `spots_filled` in the same transaction, so two people joining the last spot at the same instant can't both succeed.
-- `leave_post(p_post)` — deletes the caller's `participants` row and decrements `spots_filled` (floored at 0) only if a row was actually deleted.
+**Two special database functions**, used instead of writing directly to certain tables. They're allowed to bypass the normal security rules temporarily, so they can safely do the checking themselves:
+- `is_post_member(p_post)` — a quick check: "does this user host or belong to this post?" Used internally by the chat security rules.
+- `join_post(p_post, p_time, p_message, p_waiver)` — handles someone joining a post. It checks, in order: are they logged in, is it not their own post, have they not already joined, is there still room, did they check the waiver box if required, and is the time they picked actually valid for this post. If any check fails, it stops and sends back an error message (which shows up on the join page). If everything passes, it adds them and fills one more spot — all in one atomic step, so two people can't accidentally grab the very last spot at the same time.
+- `leave_post(p_post)` — removes someone from a post and frees up their spot.
 
-**Row Level Security:** enabled on every table. The notable design choice is that `participants` has **no insert policy at all** — the only way a row gets created is through `join_post()`, which runs as `security definer` and does its own validation, so there's no path in the app (or in the Supabase client directly) to insert a participant row without going through the capacity/waiver checks.
+**Security rules:** every table has rules controlling who can see or change which rows. The notable one: nobody — not even through the app — can directly insert a row into `participants`. The only door in is through `join_post()` above, which does all the validation itself. That guarantees no one can sneak into a full post or skip the waiver.
 
-**Realtime:** `messages` and `posts` are added to the `supabase_realtime` publication, which is what lets `ChatThread.tsx` subscribe to live inserts.
+**Realtime:** the `messages` and `posts` tables are set up to broadcast live updates, which is what lets the chat window update instantly without refreshing.
+
+---
+
+## Explaining This Project to a Developer
+
+**One-liner:** It's a Next.js app where people post a skill they're practicing, an activity, or a service request — others browse and join, then it opens a live chat and scheduling flow. Think Craigslist meets a practice-partner matchmaker.
+
+**Stack, fast:** Next.js (App Router) + TypeScript + Tailwind on the frontend, Supabase (Postgres) for the database/auth/realtime, Zod for form validation, optional Claude API call for AI-generated conversation starters.
+
+**The 3 things worth mentioning, since they're the actual design decisions:**
+
+1. **All writes go through one `actions.ts`** — Server Actions called directly from form `action` props, no separate REST/API layer for mutations. Only two real API routes exist (`/api/starters`, `/api/ics/[postId]`), both GET-only utility endpoints.
+
+2. **Concurrency-safe joins live in the database, not the app.** Joining a post calls a single Postgres function (`join_post`) that locks the row, validates capacity/waiver/ownership, and increments the counter — all in one transaction. That's deliberate: it means two people can't race for the last spot, and it means the `participants` table has *no insert policy at all* in RLS — the only way in is through that function.
+
+3. **Middleware handles session refresh + route protection in one pass** — reads the Supabase session on every request and redirects unauthenticated users before they ever reach a protected page.
+
+If someone asks "what's novel here" vs. a plain CRUD app, point at #2 — it's the one piece that isn't just scaffolding.
+
+---
+
+## Explaining This Project to a Non-Technical Person
+
+Think of it like a community bulletin board, but for doing things together instead of just buying/selling stuff.
+
+- Someone learning a hands-on skill — say, a cosmetology student who needs practice clients for their certification hours — posts: *"I'm learning to cut hair, need people to practice on, it's cheap (or free), here's where and when."*
+- Someone who just wants to do something — *"Going to see a movie Saturday, need one more person"* — posts that instead.
+- Someone who needs a cheap service — *"Looking for a low-cost haircut"* — posts a request.
+
+Other people browse those posts and tap to join. Each post shows how many spots are left, and once it's full it's marked "Booked" so people stop trying to join something that's already full.
+
+Once someone joins, a group chat opens up automatically so everyone can work out the details, and the meetup gets added to a calendar. Afterward, everyone rates each other — so if someone's unreliable or never shows up, that's visible to people deciding whether to meet them next time.
+
+The whole point: it's easier to meet new people around something you're both already planning to do, than around a dating-app-style profile with no clear reason to meet.
