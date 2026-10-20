@@ -1,6 +1,6 @@
 # Code Reference
 
-A beginner-friendly, file-by-file walkthrough of everything in `src/` and `supabase/`. For the product vision, see [README.md](README.md).
+A beginner-friendly, file-by-file walkthrough of everything in `src/` and `supabase/`. For the product vision, see [README.md](README.md). For problems hit during development and how they were fixed, see [ErrorNotes.md](ErrorNotes.md).
 
 ---
 
@@ -26,6 +26,8 @@ Instead of a folder tree, here's each folder and the files inside it, with a pla
 **Root folder**
 - `README.md` — explains what the app is and why it exists
 - `code.md` — this file
+- `ErrorNotes.md` — a log of errors, warnings and setup questions from development, with their fixes
+- `.vscode/settings.json` — editor-only setting that labels each `page.tsx` tab by its folder name; doesn't affect the app
 - `package.json` — the list of packages the app depends on (Next.js, React, Supabase, Zod, Tailwind)
 - `tsconfig.json` — TypeScript settings; sets up the `@/` shortcut so code can write `@/lib/...` instead of a long relative path
 - `tailwind.config.ts` — defines the app's colors and fonts
