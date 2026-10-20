@@ -1,27 +1,41 @@
+/**
+ * CALENDAR PAGE (/calendar), login required
+ *
+ * Your meetups in time order, split into:
+ *  - Upcoming: with Chat and .ics (add to calendar) links
+ *  - Past:     with a Rate link, to review the people you met
+ * Events you host have a navy edge; events you joined have a teal edge.
+ */
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { dayParts, fmtDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
+// One calendar entry.
 type Ev = { postId: string; title: string; location: string; starts_at: string; role: "joined" | "hosting" };
 
 export default async function CalendarPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  // Two lists: meetups you joined, and the time slots people picked on your own posts.
   const [{ data: joined }, { data: hosted }] = await Promise.all([
     supabase.from("participants").select("post:posts!post_id(id, title, location), time:post_times!time_id(starts_at)").eq("user_id", user!.id),
     supabase.from("participants").select("post:posts!inner(id, title, location, host_id), time:post_times!time_id(starts_at)").eq("post.host_id", user!.id),
   ]);
+  // Merge both lists into one, sorted by start time.
   const events: Ev[] = [
     ...((joined ?? []) as any[]).filter((r) => r.post && r.time).map((r) => ({ postId: r.post.id, title: r.post.title, location: r.post.location, starts_at: r.time.starts_at, role: "joined" as const })),
     ...((hosted ?? []) as any[]).filter((r) => r.post && r.time).map((r) => ({ postId: r.post.id, title: r.post.title, location: r.post.location, starts_at: r.time.starts_at, role: "hosting" as const })),
   ].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
 
+  // An event counts as "upcoming" until 1 hour after it starts (3,600,000 ms),
+  // so it doesn't vanish the moment the meetup begins.
   const now = Date.now();
   const upcoming = events.filter((e) => new Date(e.starts_at).getTime() >= now - 3600_000);
   const past = events.filter((e) => new Date(e.starts_at).getTime() < now - 3600_000).reverse();
 
+  // How one event row looks: date tile, details, and links.
   const Row = ({ e, past: isPast }: { e: Ev; past?: boolean }) => {
     const d = dayParts(e.starts_at);
     return (

@@ -1,3 +1,9 @@
+/**
+ * BRAND ARTWORK, drawn in code as SVG (a vector image format) so it stays
+ * sharp at any size and needs no image files.
+ */
+
+// Small logo in the header: a running-track oval in brand colors.
 export function LogoMark({ size = 44 }: { size?: number }) {
   return (
     <svg width={size} height={(size * 30) / 44} viewBox="0 0 44 30" aria-hidden="true">
@@ -9,6 +15,8 @@ export function LogoMark({ size = 44 }: { size?: number }) {
   );
 }
 
+// Large running-track illustration used on Home, Login, Sign up and success pages.
+// The name "Test Run" plays on a practice lap around a track.
 export function Track({ width = 300 }: { width?: number }) {
   return (
     <svg width={width} height={(width * 220) / 520} viewBox="0 0 520 220" role="img" aria-label="A running track" style={{ maxWidth: "100%", height: "auto" }}>

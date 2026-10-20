@@ -170,6 +170,19 @@ The app lives at the repo root (`src/`, `supabase/`, `package.json`) — no sub-
 5. `npm run dev`, then sign up through `/signup` to confirm it reaches Supabase and creates a `profiles` row.
 6. Connect the repo to Vercel so pushes to `main` deploy (not done yet).
 
+**Tip for testing:** in Supabase, turn off **Authentication → Providers → Email → Confirm email** so sign-up logs you straight in.
+
+### Try the full flow
+
+1. Sign up as user A, then **New post** (Offer a service) with a time and 1 spot.
+2. Open a private window, sign up as user B, find the post in **Browse**, join it, and open the chat.
+3. Back as user A, the post now says Booked, and both of you see the chat update live.
+4. Add to calendar (.ics), then rate each other from **Calendar**.
+
+### Deploy
+
+Push to GitHub, import the repo in Vercel, add the same env vars, and set your Vercel URL under Supabase → **Authentication → URL Configuration**.
+
 ## Project Conventions
 
 - Commit early and often with descriptive messages.

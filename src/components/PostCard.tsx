@@ -4,8 +4,16 @@ import { KIND_LABEL } from "@/lib/types";
 import { priceText, spotsText, fmtDateTime } from "@/lib/format";
 import { SpotsBar } from "./SpotsBar";
 
+/**
+ * POST PREVIEW CARD: the clickable tile shown in lists (Home, Browse, Profile).
+ *
+ * Shows the post type, price, title, location, first time option and how many
+ * spots are filled. Clicking it opens the full post page. Booked (full) posts
+ * switch to a dark navy style so they stand out as unavailable.
+ */
 export function PostCard({ post, highlight }: { post: Post; highlight?: boolean }) {
   const booked = post.status === "booked";
+  // The earliest time option, shown on the card.
   const first = post.post_times?.slice().sort((a, b) => a.starts_at.localeCompare(b.starts_at))[0];
   const kindTag = post.kind === "activity" ? "bg-teal-light text-teal-dark" : "bg-coral-light text-coral-dark";
   return (

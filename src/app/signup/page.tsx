@@ -1,3 +1,10 @@
+/**
+ * SIGN UP PAGE (/signup)
+ *
+ * Name, school email and password form that calls the signUp() server action.
+ * The left panel (desktop only) is the welcome artwork. Errors such as
+ * "User already registered" come back through ?error= in the URL.
+ */
 import Link from "next/link";
 import { signUp } from "@/app/actions";
 import { SubmitButton } from "@/components/SubmitButton";

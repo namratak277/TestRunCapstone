@@ -1,0 +1,9 @@
+{
+  // Next.js requires every page to be named page.tsx, so tabs would all look the same.
+  // These patterns label each tab by its folder instead (e.g. "[id]/confirmed").
+  "workbench.editor.customLabels.patterns": {
+    "**/app/**/page.tsx": "${dirname(1)}/${dirname}",
+    "**/app/page.tsx": "home",
+    "**/app/**/route.ts": "api: ${dirname(1)}/${dirname}"
+  }
+}

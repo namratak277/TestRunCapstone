@@ -1,4 +1,11 @@
 "use client";
+/**
+ * OPTIONAL MESSAGE TO THE HOST (on the Join page)
+ *
+ * A text box plus tappable conversation starters. Tapping a starter adds it
+ * to the message. It runs in the browser because the box updates as you tap.
+ * The text is sent along with the join form (name="message").
+ */
 import { useState } from "react";
 
 export function JoinMessage({ starters }: { starters: string[] }) {

@@ -1,3 +1,13 @@
+/**
+ * JOIN PAGE (/posts/<id>/join?time=<timeId>), login required
+ *
+ * The confirmation step before joining. Shows the chosen time, the waiver
+ * checkbox (if the host requires one), an optional message to the host, and a
+ * summary with "Due now: $0" (payment happens in person).
+ *
+ * "Confirm and join" calls the joinPost() server action, which saves the spot
+ * through the database's join_post() safety check.
+ */
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -12,12 +22,14 @@ export const dynamic = "force-dynamic";
 
 export default async function JoinPage({ params, searchParams }: { params: { id: string }; searchParams: { time?: string; error?: string } }) {
   const supabase = createClient();
+  // Load the post. If it filled up in the meantime, send the user back to the post page.
   const { data } = await supabase.from("posts").select("*, host:profiles!host_id(full_name), post_times(id, post_id, starts_at)").eq("id", params.id).single();
   if (!data) notFound();
   const post = data as Post;
   if (post.status === "booked") redirect(`/posts/${post.id}`);
 
   const times = (post.post_times ?? []).slice().sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+  // The time picked on the post page (or the earliest one if none was picked).
   const chosen = times.find((t) => t.id === searchParams.time) ?? times[0];
 
   return (

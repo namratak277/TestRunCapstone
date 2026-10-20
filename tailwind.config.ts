@@ -1,9 +1,14 @@
+// Tailwind design settings: the Test Run brand colors and fonts.
+// Defining them here lets every file write short class names like "bg-teal"
+// or "text-navy" instead of repeating hex codes, so the look stays consistent.
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  // Which files Tailwind scans for class names (unused styles are dropped).
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      // Brand palette. "DEFAULT" is used by plain "teal"; "teal-light" etc. are shades.
       colors: {
         teal: { DEFAULT: "#1E7A6E", light: "#DDF1EE", dark: "#14564D", mid: "#2A9D8F" },
         coral: { DEFAULT: "#F4A261", light: "#FCE5D0", dark: "#6B3A0B" },
@@ -13,6 +18,7 @@ const config: Config = {
         line: "#E5DACA",
         muted: "#3D565F",
       },
+      // Fonts are loaded in app/layout.tsx and exposed as CSS variables.
       fontFamily: {
         serif: ["var(--font-serif)", "serif"],
         sans: ["var(--font-sans)", "sans-serif"],

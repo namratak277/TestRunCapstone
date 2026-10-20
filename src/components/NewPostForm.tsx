@@ -1,8 +1,20 @@
 "use client";
+/**
+ * THE "NEW POST" FORM (used on /new)
+ *
+ * Runs in the browser so it can react as you type: picking a lane changes the
+ * placeholder text, the +/- buttons change the spot count, and a live preview
+ * card on the right shows what the post will look like.
+ *
+ * When submitted, all fields go to the createPost() server action in app/actions.ts.
+ * Values that aren't normal text boxes (kind, capacity, times) are sent through
+ * hidden <input> fields.
+ */
 import { useState } from "react";
 import type { Kind } from "@/lib/types";
 import { SubmitButton } from "./SubmitButton";
 
+// The three "lanes" (post types) shown as big selectable cards at the top.
 const LANES: { kind: Kind; n: number; title: string; sub: string; cls: string }[] = [
   { kind: "skill", n: 1, title: "Offer a service", sub: "Practice your craft on a real person", cls: "bg-teal text-white" },
   { kind: "activity", n: 2, title: "Host a plan", sub: "Movie, hike, game night, anything", cls: "bg-navy text-white" },
@@ -10,17 +22,20 @@ const LANES: { kind: Kind; n: number; title: string; sub: string; cls: string }[
 ];
 
 export function NewPostForm({ action, initialKind, error }: { action: (f: FormData) => void; initialKind: Kind; error?: string }) {
+  // Form values the screen needs to react to (the preview, the lane highlight...).
   const [kind, setKind] = useState<Kind>(initialKind);
-  const [times, setTimes] = useState<string[]>([""]);
+  const [times, setTimes] = useState<string[]>([""]); // starts with one empty time slot
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [capacity, setCapacity] = useState(1);
 
   return (
     <form action={action}>
+      {/* Hidden fields carry the lane and the times (converted to a standard UTC format). */}
       <input type="hidden" name="kind" value={kind} />
       {times.map((t, i) => (t ? <input key={i} type="hidden" name="times" value={new Date(t).toISOString()} /> : null))}
 
+      {/* Lane picker. Services are 1:1, so picking one resets spots to 1. */}
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
         {LANES.map((l) => (
           <button key={l.kind} type="button" onClick={() => { setKind(l.kind); if (l.kind === "skill" || l.kind === "request") setCapacity(1); }} className={`${l.cls} text-left rounded-[22px] p-5 border-4 ${kind === l.kind ? "border-coral" : "border-transparent"}`}>
@@ -73,6 +88,7 @@ export function NewPostForm({ action, initialKind, error }: { action: (f: FormDa
             <p className="text-sm text-muted">Payment is settled in person for now.</p>
           </div>
 
+          {/* Waiver is on by default for skill practice (e.g. a student doing nails). */}
           <div className="card space-y-3">
             <div className="label tracking-widest">SAFETY</div>
             <label className="flex gap-3 items-center"><input type="checkbox" name="requires_waiver" defaultChecked={kind === "skill"} key={kind} className="w-5 h-5 accent-teal" /> Require a waiver before people join</label>
@@ -80,6 +96,7 @@ export function NewPostForm({ action, initialKind, error }: { action: (f: FormDa
           </div>
         </div>
 
+        {/* Live preview: updates as you type the title, price and spots. */}
         <aside className="flex-none basis-[320px] w-full md:w-[320px] space-y-4">
           <div className="label tracking-widest">PREVIEW</div>
           <div className="card">

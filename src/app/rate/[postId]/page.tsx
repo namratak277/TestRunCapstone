@@ -1,3 +1,12 @@
+/**
+ * RATING PAGE (/rate/<postId>), login required
+ *
+ * After a meetup, each side rates the other:
+ *  - If you're the host, you get one rating form per participant.
+ *  - If you joined, you get one form for the host.
+ * Each form asks: did they show up, 1-5 stars, quick tags, and a comment.
+ * People you've already rated show "You already rated ..." instead of a form.
+ */
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -6,6 +15,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 
 export const dynamic = "force-dynamic";
 
+// Quick compliment tags people can tick.
 const TAGS = ["On time", "Friendly", "Felt safe", "Skilled", "Good conversation"];
 
 export default async function RatePage({ params, searchParams }: { params: { postId: string }; searchParams: { error?: string; done?: string } }) {
@@ -15,13 +25,16 @@ export default async function RatePage({ params, searchParams }: { params: { pos
   if (!post) notFound();
   const { data: parts } = await supabase.from("participants").select("user_id, who:profiles!user_id(full_name)").eq("post_id", post.id);
 
+  // Only people who were part of this meetup can rate.
   const isHost = post.host_id === user!.id;
   const isParticipant = (parts ?? []).some((p: any) => p.user_id === user!.id);
   if (!isHost && !isParticipant) notFound();
 
+  // Who you're rating: all participants (if you're the host) or just the host.
   const targets: { id: string; name: string }[] = isHost
     ? (parts ?? []).map((p: any) => ({ id: p.user_id, name: p.who?.full_name || "Member" }))
     : [{ id: post.host_id, name: (post.host as any)?.full_name || "Host" }];
+  // People you've already rated for this post.
   const { data: done } = await supabase.from("ratings").select("ratee_id").eq("post_id", post.id).eq("rater_id", user!.id);
   const doneIds = new Set((done ?? []).map((d: any) => d.ratee_id));
 

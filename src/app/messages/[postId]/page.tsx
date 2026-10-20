@@ -1,3 +1,13 @@
+/**
+ * ONE CHAT (/messages/<postId>), login required
+ *
+ * The server loads the post, its members and the last 200 messages, then
+ * hands them to the ChatThread component, which runs in the browser and
+ * keeps the conversation updating live.
+ *
+ * Only the host and people who joined can open it; anyone else gets a 404.
+ * (The database's security rules enforce the same thing as a second layer.)
+ */
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -14,6 +24,7 @@ export default async function ThreadPage({ params }: { params: { postId: string 
   if (!post) notFound();
 
   const { data: parts } = await supabase.from("participants").select("user_id, time:post_times!time_id(starts_at)").eq("post_id", post.id);
+  // Members = the host + everyone who joined. Block anyone else.
   const memberIds = Array.from(new Set([post.host_id, ...(parts ?? []).map((p: any) => p.user_id)]));
   if (!memberIds.includes(user!.id)) notFound();
 
@@ -21,6 +32,7 @@ export default async function ThreadPage({ params }: { params: { postId: string 
     supabase.from("profiles").select("id, full_name").in("id", memberIds),
     supabase.from("messages").select("*").eq("post_id", post.id).order("created_at").limit(200),
   ]);
+  // Build a lookup of user id -> name, so chat bubbles can show who wrote them.
   const names: Record<string, string> = {};
   (profiles ?? []).forEach((p: any) => (names[p.id] = p.full_name || "Member"));
   const myTime = (parts ?? []).find((p: any) => p.user_id === user!.id) as any;

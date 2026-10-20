@@ -1,3 +1,10 @@
+/**
+ * "YOU'RE IN" PAGE (/posts/<id>/confirmed), shown right after joining
+ *
+ * Confirms your spot and gives next steps: download a calendar invite (.ics),
+ * get Google Maps directions to the meeting place, and open the chat.
+ * Shows a 404 if you haven't actually joined this post.
+ */
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -11,6 +18,7 @@ export default async function ConfirmedPage({ params }: { params: { id: string }
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  // Find your participant record for this post, with your chosen time and the post details.
   const { data: part } = await supabase
     .from("participants")
     .select("time:post_times!time_id(starts_at), post:posts!post_id(*, host:profiles!host_id(full_name))")

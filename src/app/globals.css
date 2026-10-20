@@ -1,18 +1,31 @@
+/*
+ * GLOBAL STYLES, applied to every page.
+ *
+ * The three @tailwind lines pull in Tailwind's base reset and utility classes.
+ * Below that are a few reusable "building block" classes (buttons, cards,
+ * inputs, chips) so pages can write class="btn-primary" instead of
+ * repeating a long list of styles each time.
+ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Default page background, text color and font. */
 body { @apply bg-cream text-navy font-sans; }
 a { @apply text-teal; }
 
 @layer components {
+  /* Buttons: .btn is the shared shape; the others add a color scheme. */
   .btn { @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-bold text-center no-underline transition disabled:opacity-50; }
   .btn-primary { @apply btn bg-teal text-white hover:bg-teal-dark; }
   .btn-navy { @apply btn bg-navy text-white hover:bg-navy-soft; }
   .btn-outline { @apply btn border-2 border-navy text-navy bg-transparent hover:bg-navy hover:text-white; }
+  /* White rounded box used for most page sections. */
   .card { @apply bg-white border border-line rounded-[22px] p-5; }
+  /* Form field labels, plus text boxes. */
   .label { @apply text-[13px] font-bold tracking-wide text-muted mb-1.5 block; }
   .input { @apply w-full bg-cream border border-line rounded-xl px-3.5 py-3 text-navy placeholder:text-muted/70 focus:outline-none focus:ring-2 focus:ring-teal; }
+  /* Pill-shaped filter buttons; .chip-on is the selected one. */
   .chip { @apply inline-block rounded-full px-4 py-1.5 text-sm font-medium bg-white border border-line text-navy no-underline; }
   .chip-on { @apply inline-block rounded-full px-4 py-1.5 text-sm font-bold bg-navy text-white no-underline; }
 }

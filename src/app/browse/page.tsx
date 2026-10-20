@@ -1,3 +1,11 @@
+/**
+ * BROWSE / SEARCH PAGE (/browse)
+ *
+ * Lists up to 50 posts, newest first, with a search box and filter chips.
+ * All search and filter choices live in the URL, for example
+ *   /browse?q=nails&type=skill&open=1&free=1
+ * so results can be bookmarked or shared, and the Back button works.
+ */
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Post } from "@/lib/types";
@@ -5,10 +13,12 @@ import { PostCard } from "@/components/PostCard";
 
 export const dynamic = "force-dynamic";
 
+// The filters that can appear in the URL.
 type SP = { q?: string; type?: string; open?: string; free?: string };
 
 export default async function BrowsePage({ searchParams }: { searchParams: SP }) {
   const supabase = createClient();
+  // Remove characters that have special meaning in the database search syntax.
   const q = (searchParams.q ?? "").replace(/[%,()*\\]/g, " ").trim();
 
   let query = supabase
@@ -16,6 +26,8 @@ export default async function BrowsePage({ searchParams }: { searchParams: SP })
     .select("*, host:profiles!host_id(full_name), post_times(id, post_id, starts_at)")
     .order("created_at", { ascending: false })
     .limit(50);
+  // Add each active filter to the query. "ilike" is a case-insensitive text match,
+  // so the search looks for the words in the title, category, description or location.
   if (q) query = query.or(`title.ilike.%${q}%,category.ilike.%${q}%,description.ilike.%${q}%,location.ilike.%${q}%`);
   if (searchParams.type && ["skill", "activity", "request"].includes(searchParams.type)) query = query.eq("kind", searchParams.type);
   if (searchParams.open === "1") query = query.eq("status", "open");
@@ -23,6 +35,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: SP })
   const { data } = await query;
   const posts = (data ?? []) as Post[];
 
+  // Builds a link to this page with one filter changed and the others kept.
   const href = (o: Partial<SP>) => {
     const p = new URLSearchParams();
     const merged = { ...searchParams, ...o };
@@ -30,6 +43,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: SP })
     const s = p.toString();
     return `/browse${s ? "?" + s : ""}`;
   };
+  // One filter chip: dark when selected; clicking it goes to the updated link.
   const chip = (label: string, on: boolean, to: string) => (
     <Link key={label} href={to} className={on ? "chip-on" : "chip"}>{label}</Link>
   );

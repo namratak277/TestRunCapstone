@@ -1,3 +1,14 @@
+/**
+ * HOME PAGE (/)
+ *
+ * One page with two faces:
+ *  - Logged out: a marketing page explaining Test Run, with Sign up / Browse buttons.
+ *  - Logged in:  a dashboard that greets you by name and lists your upcoming meetups.
+ * Both show the three "lanes", the newest open posts, and a "how it works" strip.
+ *
+ * In Next.js, a file named page.tsx inside src/app/ becomes a web page, and its
+ * folder path becomes the URL. This one sits at the top, so it's the home page.
+ */
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Post } from "@/lib/types";
@@ -5,18 +16,23 @@ import { PostCard } from "@/components/PostCard";
 import { Track } from "@/components/Logo";
 import { dayParts, fmtTime } from "@/lib/format";
 
+// Always build this page fresh for each visitor, so the posts and spot counts are current.
 export const dynamic = "force-dynamic";
 
+// What to fetch for each post: all its columns, plus the host's name and its time options.
 const POST_SELECT = "*, host:profiles!host_id(full_name), post_times(id, post_id, starts_at)";
 
 export default async function Home() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  // The 8 newest posts, for the "Open this week" section.
   const { data: posts } = await supabase.from("posts").select(POST_SELECT).order("created_at", { ascending: false }).limit(8);
 
   let name = "";
   let upcoming: { id: string; title: string; starts_at: string }[] = [];
+  // Logged-in only: load your name and your next 3 upcoming meetups.
+  // Promise.all runs both database queries at the same time to save time.
   if (user) {
     const [{ data: prof }, { data: mine }] = await Promise.all([
       supabase.from("profiles").select("full_name").eq("id", user.id).single(),
@@ -32,6 +48,7 @@ export default async function Home() {
 
   return (
     <div className="max-w-[1240px] mx-auto px-4 md:px-6">
+      {/* Hero banner: the headline changes depending on login. */}
       <section className="flex flex-wrap items-center justify-between gap-6 pt-10 pb-6">
         <div className="flex-1 basis-[420px]">
           <div className="text-teal font-bold text-sm tracking-wider">{user ? `WELCOME BACK${name ? ", " + name.toUpperCase() : ""}` : "STARTING AT UNCG"}</div>
@@ -53,6 +70,7 @@ export default async function Home() {
         <Track width={300} />
       </section>
 
+      {/* The three lanes: offer a service, host a plan, find a service. */}
       <section className="grid md:grid-cols-3 gap-5 py-6">
         <div className="bg-teal text-white rounded-[28px] p-7 flex flex-col">
           <div className="text-[13px] font-bold tracking-wider text-[#D7F0EC]">LANE 1 · OFFER A SERVICE</div>
@@ -74,6 +92,7 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Newest posts on the left; "Your upcoming" and a safety tip on the right. */}
       <section className="flex flex-wrap gap-7 items-start py-6">
         <div className="flex-1 basis-[560px] min-w-0">
           <div className="flex items-center justify-between mb-5">
@@ -114,6 +133,7 @@ export default async function Home() {
         </aside>
       </section>
 
+      {/* 4-step "how it works" strip. */}
       <section className="py-8">
         <div className="bg-beige rounded-[28px] p-8">
           <h2 className="font-serif text-3xl mb-6">How a test run happens</h2>

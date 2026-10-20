@@ -1,13 +1,22 @@
 "use client";
+/**
+ * BOTTOM TAB BAR (phones only, like a native app)
+ *
+ * Hidden on desktop (md:hidden), where the top Header has the links instead.
+ * It runs in the browser so it can read the current address and highlight
+ * the active tab. The middle coral "+" button opens New post.
+ */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+// Draws one outline icon in the given color.
 const Icon = ({ d, c }: { d: React.ReactNode; c: string }) => (
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>
 );
 
 export function TabBar() {
-  const path = usePathname();
+  const path = usePathname(); // current address, e.g. "/browse"
+  // Each tab: its label, where it goes, which pages count as "on this tab", and its icon drawing.
   const tabs = [
     { label: "Home", href: "/", match: (p: string) => p === "/", d: <path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" /> },
     { label: "Browse", href: "/browse", match: (p: string) => p.startsWith("/browse") || p.startsWith("/posts"), d: <><circle cx="11" cy="11" r="7" /><line x1="16.5" y1="16.5" x2="21" y2="21" /></> },

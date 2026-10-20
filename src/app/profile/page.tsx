@@ -1,3 +1,10 @@
+/**
+ * PROFILE PAGE (/profile), login required
+ *
+ * Your account at a glance: name, email and verification badge; stats
+ * (test runs, average rating, no-shows); your posts; posts you joined;
+ * the reviews others left you; and a Log out button.
+ */
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Post } from "@/lib/types";
@@ -9,6 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function ProfilePage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  // Load four things at once: your name, your posts, posts you joined, and ratings about you.
   const sel = "*, host:profiles!host_id(full_name), post_times(id, post_id, starts_at)";
   const [{ data: prof }, { data: mine }, { data: joined }, { data: ratings }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user!.id).single(),
@@ -16,6 +24,7 @@ export default async function ProfilePage() {
     supabase.from("participants").select(`post:posts!post_id(${sel})`).eq("user_id", user!.id),
     supabase.from("ratings").select("stars, showed_up, comment, tags, created_at, rater:profiles!rater_id(full_name)").eq("ratee_id", user!.id).order("created_at", { ascending: false }),
   ]);
+  // Work out the stats: average stars and how many people said you didn't show up.
   const joinedPosts = ((joined ?? []) as any[]).map((j) => j.post).filter(Boolean) as Post[];
   const rated = (ratings ?? []).filter((r: any) => r.stars);
   const avg = rated.length ? (rated.reduce((s: number, r: any) => s + r.stars, 0) / rated.length).toFixed(1) : "—";

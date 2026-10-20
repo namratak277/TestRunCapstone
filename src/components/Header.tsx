@@ -1,7 +1,18 @@
+/**
+ * TOP NAVIGATION BAR (shown on every page, via app/layout.tsx)
+ *
+ * Shows the logo, page links and a search box on desktop. On the right it
+ * shows "Log in / Sign up" for visitors, or "New post" and a profile icon
+ * for logged-in users. On phones the links are hidden and the bottom TabBar
+ * takes over.
+ *
+ * This runs on the server, so it can check who is logged in before the page is sent.
+ */
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LogoMark } from "./Logo";
 
+// [label, address] for each desktop nav link.
 const links = [
   ["Home", "/"],
   ["Browse", "/browse"],
@@ -24,10 +35,12 @@ export async function Header() {
             <Link key={href} href={href} className="text-navy no-underline hover:text-teal py-1">{label}</Link>
           ))}
         </nav>
+        {/* Search box: submitting goes to /browse?q=<your search>. */}
         <form action="/browse" className="hidden md:flex flex-1 items-center">
           <input name="q" placeholder="Search nails, hikes, photo shoots…" className="w-full bg-cream border border-line rounded-full px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal" />
         </form>
         <div className="ml-auto md:ml-0 flex items-center gap-3">
+          {/* Different buttons depending on whether someone is logged in. */}
           {user ? (
             <>
               <Link href="/new" className="btn-primary !py-2.5 !px-5 hidden md:inline-flex">New post</Link>

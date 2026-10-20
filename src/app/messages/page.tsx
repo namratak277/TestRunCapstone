@@ -1,3 +1,9 @@
+/**
+ * CHATS LIST (/messages), login required
+ *
+ * Every post has one group chat. This page lists the chats you belong to:
+ * posts you host plus posts you joined. Click one to open it.
+ */
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
@@ -5,7 +11,10 @@ export const dynamic = "force-dynamic";
 
 export default async function MessagesPage() {
   const supabase = createClient();
+  // The "!" after user means "we know this isn't empty": the login guard
+  // (middleware) already blocks logged-out visitors from this page.
   const { data: { user } } = await supabase.auth.getUser();
+  // Load posts you host and posts you joined at the same time, then combine them.
   const [{ data: hosted }, { data: joined }] = await Promise.all([
     supabase.from("posts").select("id, title, capacity, spots_filled, created_at").eq("host_id", user!.id),
     supabase.from("participants").select("post:posts!post_id(id, title, capacity, spots_filled, created_at)").eq("user_id", user!.id),

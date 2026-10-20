@@ -1,3 +1,12 @@
+/**
+ * LOG IN PAGE (/login)
+ *
+ * Email + password form that calls the signIn() server action.
+ * Messages arrive through the URL:
+ *   ?error=...  a failed login ("Invalid login credentials")
+ *   ?msg=...    a notice, e.g. "Check your email to confirm your account"
+ *   ?next=...   the page to return to after logging in (set by the login guard)
+ */
 import Link from "next/link";
 import { signIn } from "@/app/actions";
 import { SubmitButton } from "@/components/SubmitButton";

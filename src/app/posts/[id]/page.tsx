@@ -1,3 +1,17 @@
+/**
+ * POST DETAIL PAGE (/posts/<id>)
+ *
+ * The [id] folder name means "any value goes here": /posts/abc123 loads the post
+ * with id abc123.
+ *
+ * Left column:  description, time options, host info and rating, safety notes,
+ *               and public Q&A (anyone can ask; only the host can answer).
+ * Right column: price and spots, plus an action box that changes by who's looking:
+ *   - the host        -> Open chat / Rate participants
+ *   - already joined  -> See your plan / Open chat / Leave
+ *   - post is full    -> "Booked" + See similar posts
+ *   - everyone else   -> pick a time and "Join this test run"
+ */
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -14,6 +28,7 @@ export default async function PostPage({ params, searchParams }: { params: { id:
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Load the post with its host and time options; show a 404 page if it doesn't exist.
   const { data } = await supabase
     .from("posts")
     .select("*, host:profiles!host_id(full_name), post_times(id, post_id, starts_at)")
@@ -23,11 +38,13 @@ export default async function PostPage({ params, searchParams }: { params: { id:
   const post = data as Post;
   const times = (post.post_times ?? []).slice().sort((a, b) => a.starts_at.localeCompare(b.starts_at));
 
+  // At the same time, load: the Q&A, the host's ratings, and whether you already joined.
   const [{ data: qs }, { data: ratings }, { data: mine }] = await Promise.all([
     supabase.from("questions").select("*, asker:profiles!user_id(full_name)").eq("post_id", post.id).order("created_at"),
     supabase.from("ratings").select("stars").eq("ratee_id", post.host_id),
     user ? supabase.from("participants").select("id").eq("post_id", post.id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
   ]);
+  // Host's average star rating (ignoring ratings with no stars).
   const rated = (ratings ?? []).filter((r: any) => r.stars);
   const avg = rated.length ? (rated.reduce((s: number, r: any) => s + r.stars, 0) / rated.length).toFixed(1) : null;
   const isHost = user?.id === post.host_id;
@@ -72,6 +89,7 @@ export default async function PostPage({ params, searchParams }: { params: { id:
             )}
           </div>
 
+          {/* Public Q&A: each question shows the answer, a reply box (host only), or "waiting". */}
           <div className="card">
             <div className="label tracking-widest">QUESTIONS FOR THE HOST</div>
             {(qs ?? []).length === 0 && <p className="text-muted text-[15px] mb-3">No questions yet.</p>}
@@ -96,6 +114,7 @@ export default async function PostPage({ params, searchParams }: { params: { id:
             <SpotsBar filled={post.spots_filled} capacity={post.capacity} booked={booked} />
             <div className={`text-sm font-bold mb-4 ${booked ? "text-[#B0561A]" : "text-teal-dark"}`}>{spotsText(post)}</div>
 
+            {/* The action box: four versions depending on who is viewing (see the top of this file). */}
             {isHost ? (
               <div className="space-y-3">
                 <p className="text-[15px] text-muted">This is your post.</p>
@@ -112,6 +131,8 @@ export default async function PostPage({ params, searchParams }: { params: { id:
             ) : booked ? (
               <div><div className="btn bg-line text-muted w-full">Booked</div><Link href={`/browse?type=${post.kind}&open=1`} className="block text-center font-bold mt-3">See similar posts</Link></div>
             ) : (
+              // Choosing a time and clicking Join only opens the Join page
+              // (/posts/<id>/join?time=...). Nothing is saved yet.
               <form action={`/posts/${post.id}/join`} method="get" className="space-y-3">
                 <div className="space-y-2">
                   {times.map((t, i) => (

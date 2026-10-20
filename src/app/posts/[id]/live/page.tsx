@@ -1,3 +1,9 @@
+/**
+ * "YOUR POST IS LIVE" PAGE (/posts/<id>/live), shown right after creating a post
+ *
+ * A success screen: previews the new post as it appears in lists and explains
+ * what happens next (people join -> Booked when full -> chat opens -> calendar).
+ */
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
